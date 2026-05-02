@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KUSH CRUSH</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#4ade80">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Kush Crush">
+<script>
+  if ('serviceWorker' in navigator)
+    window.addEventListener('load', () =>
+      navigator.serviceWorker.register('./sw.js')
+    );
+</script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:wght@400;700&display=swap');
+
+:root {
+  --bg: #080d08;
+  --panel: #0f180f;
+  --border: #1a2e1a;
+  --green: #4ade80;
+  --lime: #a3e635;
+  --gold: #fbbf24;
+  --orange: #fb923c;
+  --purple: #a855f7;
+  --red: #f87171;
+  --text: #e8f5e9;
+  --muted: #3d6b3d;
+  --cell: 46px;
+  --gap: 3px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--text);font-family:'Space Mono',monospace;overflow:hidden;touch-action:none}
+body::after{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.5}
+
+.screen{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;overflow-y:auto;overflow-x:hidden;transition:opacity .3s,transform .3s}
+.screen.hidden{opacity:0;pointer-events:none;transform:translateY(18px)}
+
+/* MENU */
+#screen-menu{justify-content:center;background:radial-gradient(ellipse 70% 50% at 30% 30%,rgba(74,222,128,.09) 0%,transparent 60%),radial-gradient(ellipse 60% 60% at 70% 70%,rgba(168,85,247,.07) 0%,transparent 60%),var(--bg);padding:40px 24px}
+.menu-logo{font-family:'Bebas Neue',sans-serif;font-size:clamp(60px,20vw,86px);letter-spacing:6px;line-height:.9;text-align:center;background:linear-gradient(135deg,#a3e635,#4ade80,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:drop-shadow(0 0 30px rgba(74,222,128,.3));margin-bottom:4px}
+.menu-logo span{background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent;filter:none}
+.menu-tagline{font-size:10px;letter-spacing:4px;color:var(--muted);text-transform:uppercase;text-align:center;margin-bottom:28px}
+.strains-float{font-size:30px;display:flex;justify-content:center;gap:10px;margin-bottom:32px;animation:float 4s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.menu-btn{display:block;width:100%;max-width:280px;padding:13px 0;margin:0 auto 9px;background:transparent;border:1px solid;font-family:'Space Mono',monospace;font-size:12px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;transition:background .2s,color .2s}
+.menu-btn.primary{border-color:var(--green);color:var(--green)}
+.menu-btn.primary:active{background:var(--green);color:var(--bg)}
+.menu-btn.secondary{border-color:var(--muted);color:var(--muted)}
+.menu-btn.secondary:active{background:var(--muted);color:var(--bg)}
+.menu-btn.danger{border-color:var(--red);color:var(--red)}
+.menu-btn.danger:active{background:var(--red);color:var(--bg)}
+.menu-stats{display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;max-width:280px;margin:14px auto 0}
+.menu-stat{background:var(--panel);border:1px solid var(--border);padding:10px;text-align:center}
+.menu-stat-label{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.menu-stat-val{font-family:'Bebas Neue',sans-serif;font-size:28px;color:var(--lime);line-height:1.1}
+
+/* LEVEL SELECT */
+#screen-levels{background:var(--bg);padding:0 0 30px}
+.sub-header{width:100%;position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--border);padding:14px 18px;display:flex;align-items:center;gap:12px}
+.back-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-family:'Space Mono',monospace;font-size:11px;letter-spacing:1px;padding:6px 12px;cursor:pointer}
+.back-btn:active{background:var(--border)}
+.sub-title{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--text)}
+.world-section{width:100%;padding:18px 18px 0}
+.world-label{font-size:9px;letter-spacing:3px;color:var(--muted);text-transform:uppercase;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.world-label::after{content:'';flex:1;height:1px;background:var(--border)}
+.levels-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-bottom:22px}
+.level-tile{aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--panel);border:1px solid var(--border);cursor:pointer;position:relative;transition:transform .1s,border-color .1s;overflow:hidden}
+.level-tile:active{transform:scale(.92)}
+.level-tile.locked{opacity:.3;cursor:not-allowed}
+.level-tile.completed{border-color:var(--green)}
+.level-tile.completed::after{content:'';position:absolute;inset:0;background:rgba(74,222,128,.05)}
+.level-tile.current{border-color:var(--gold);box-shadow:0 0 10px rgba(251,191,36,.2)}
+.tile-num{font-family:'Bebas Neue',sans-serif;font-size:22px;line-height:1;color:var(--text)}
+.tile-stars{font-size:10px;margin-top:2px;letter-spacing:-1px}
+.tile-emoji{font-size:16px;margin-bottom:2px}
+
+/* HOW TO */
+#screen-howto{background:var(--bg);padding:0 0 30px}
+.how-content{padding:18px}
+.how-section{margin-bottom:18px}
+.how-section h3{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:2px;color:var(--lime);margin-bottom:8px}
+.how-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:10px;color:var(--muted);letter-spacing:.5px;line-height:1.6}
+.how-row:last-child{border-bottom:none}
+.how-row .icon{font-size:22px;width:34px;text-align:center;flex-shrink:0}
+.how-row strong{color:var(--text)}
+
+/* GAME */
+#screen-game{background:radial-gradient(ellipse 80% 40% at 50% 0%,rgba(74,222,128,.05) 0%,transparent 50%),var(--bg);padding:0 0 14px;justify-content:flex-start}
+.game-header{width:100%;padding:11px 15px 7px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.game-logo{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;background:linear-gradient(135deg,var(--lime),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.game-logo span{background:linear-gradient(135deg,var(--gold),var(--orange));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.game-level-info{display:flex;align-items:center;gap:7px}
+.game-level-badge{background:var(--border);border:1px solid var(--muted);padding:3px 9px;font-size:10px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.game-pause-btn{background:transparent;border:1px solid var(--border);color:var(--muted);font-size:15px;padding:4px 9px;cursor:pointer;font-family:'Space Mono',monospace}
+.game-pause-btn:active{background:var(--border)}
+.hud{width:100%;padding:7px 15px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px}
+.hud-card{background:var(--panel);border:1px solid var(--border);padding:5px 7px;text-align:center}
+.hud-label{font-size:8px;letter-spacing:2px;color:var(--muted);text-transform:uppercase}
+.hud-value{font-family:'Bebas Neue',sans-serif;font-size:19px;letter-spacing:1px;line-height:1.1}
+#score-val{color:var(--lime)}
+#moves-val{color:var(--gold)}
+#target-val{color:var(--purple)}
+.progress-wrap{width:calc(100% - 30px);margin:0 15px 7px;height:3px;background:var(--border)}
+.progress-bar{height:100%;background:linear-gradient(90deg,var(--lime),var(--green));transition:width .3s;box-shadow:0 0 6px var(--green)}
+.level-objective{width:calc(100% - 30px);margin:0 15px 8px;background:var(--panel);border:1px solid var(--border);padding:5px 9px;display:flex;align-items:center;gap:7px;font-size:9px;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+.level-objective strong{color:var(--text);font-size:9px}
+.obj-icon{font-size:14px}
+.board-wrap{width:calc(var(--cell)*7 + var(--gap)*6 + 4px);padding:2px;background:var(--border);margin:0 auto}
+#board{display:grid;grid-template-columns:repeat(7,var(--cell));grid-template-rows:repeat(7,var(--cell));gap:var(--gap);background:var(--panel);padding:var(--gap)}
+.cell{width:var(--cell);height:var(--cell);display:flex;align-items:center;justify-content:center;font-size:22px;border-radius:4px;background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.04);cursor:pointer;position:relative;user-select:none;will-change:transform;transition:transform .1s}
+.cell.selected{background:rgba(74,222,128,.15);border-color:var(--green);box-shadow:0 0 10px rgba(74,222,128,.35),inset 0 0 6px rgba(74,222,128,.1);transform:scale(1.06)}
+.cell.blocked{background:rgba(30,50,30,.4);border:1px solid rgba(255,255,255,.06);cursor:not-allowed}
+.cell.blocked::after{content:'🧱';font-size:20px;position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.cell.matched{animation:pop .33s cubic-bezier(.36,.07,.19,.97) forwards}
+@keyframes pop{0%{transform:scale(1);opacity:1}40%{transform:scale(1.3) rotate(8deg);opacity:.8}100%{transform:scale(0);opacity:0}}
+.cell.falling{animation:fall .22s ease-out}
+@keyframes fall{0%{transform:translateY(-55px);opacity:0}100%{transform:translateY(0);opacity:1}}
+.cell.shake{animation:shake .3s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+.score-pop{position:fixed;font-family:'Bebas Neue',sans-serif;font-size:19px;color:var(--lime);pointer-events:none;animation:rise .8s ease forwards;z-index:200;text-shadow:0 0 8px var(--green);white-space:nowrap}
+@keyframes rise{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-50px) scale(.7)}}
+.combo-display{position:fixed;top:45%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:46px;letter-spacing:4px;color:var(--gold);text-shadow:0 0 30px var(--gold);pointer-events:none;z-index:300;animation:combo-anim .9s ease forwards;white-space:nowrap}
+@keyframes combo-anim{0%{opacity:0;transform:translate(-50%,-50%) scale(.4)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.1)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(.8)}}
+
+/* OVERLAYS */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:flex;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(8px)}
+.overlay.hidden{display:none}
+.modal{background:var(--panel);border:1px solid var(--border);padding:26px 22px;text-align:center;max-width:300px;width:90%;position:relative}
+.modal::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(74,222,128,.04),transparent);pointer-events:none}
+.modal-emoji{font-size:48px;line-height:1;margin-bottom:8px}
+.modal-title{font-family:'Bebas Neue',sans-serif;font-size:42px;letter-spacing:4px;line-height:1;margin-bottom:5px}
+.modal-title.win{color:var(--lime);text-shadow:0 0 20px rgba(163,230,53,.4)}
+.modal-title.lose{color:var(--red)}
+.modal-title.pause{color:var(--gold)}
+.modal-sub{font-size:9px;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.modal-score{font-family:'Bebas Neue',sans-serif;font-size:34px;color:var(--green);margin-bottom:5px}
+.modal-stars{font-size:26px;margin-bottom:16px;letter-spacing:4px}
+.modal-btn{display:block;width:100%;padding:11px 0;background:transparent;border:1px solid;font-family:'Space Mono',monospace;font-size:11px;letter-spacing:3px;text-transform:uppercase;cursor:pointer;margin-top:8px;transition:background .2s,color .2s}
+.modal-btn.primary{border-color:var(--green);color:var(--green)}
+.modal-btn.primary:active{background:var(--green);color:var(--bg)}
+.modal-btn.secondary{border-color:var(--muted);color:var(--muted)}
+.modal-btn.secondary:active{background:var(--muted);color:var(--bg)}
+.modal-btn.danger{border-color:var(--red);color:var(--red)}
+.modal-btn.danger:active{background:var(--red);color:var(--bg)}
+
+@media(max-width:380px){:root{--cell:40px}}
+</style>
+</head>
+<body>
+
+<!-- MENU -->
+<div class="screen" id="screen-menu">
+  <div class="menu-logo">KUSH<br><span>CRUSH</span></div>
+  <div class="menu-tagline">match 3 · strain edition</div>
+  <div class="strains-float">🌿🍋🫐🔥🌸</div>
+  <button class="menu-btn primary" id="btn-play">▶ JOGAR</button>
+  <button class="menu-btn secondary" id="btn-levels">☰ FASES</button>
+  <button class="menu-btn secondary" id="btn-howto">? COMO JOGAR</button>
+  <button class="menu-btn danger" id="btn-reset">✕ RESETAR SAVE</button>
+  <div class="menu-stats">
+    <div class="menu-stat"><div class="menu-stat-label">Próx. fase</div><div class="menu-stat-val" id="stat-level">1</div></div>
+    <div class="menu-stat"><div class="menu-stat-label">Concluídas</div><div class="menu-stat-val" id="stat-done">0/15</div></div>
+  </div>
+</div>
+
+<!-- LEVEL SELECT -->
+<div class="screen hidden" id="screen-levels">
+  <div class="sub-header">
+    <button class="back-btn" id="lvl-back">← VOLTAR</button>
+    <div class="sub-title">FASES</div>
+  </div>
+  <div id="levels-content"></div>
+</div>
+
+<!-- HOW TO PLAY -->
+<div class="screen hidden" id="screen-howto">
+  <div class="sub-header">
+    <button class="back-btn" id="howto-back">← VOLTAR</button>
+    <div class="sub-title">COMO JOGAR</div>
+  </div>
+  <div class="how-content">
+    <div class="how-section">
+      <h3>Mecânica</h3>
+      <div class="how-row"><div class="icon">👆</div><div>Toque em duas peças adjacentes ou <strong>arraste</strong> para trocar.</div></div>
+      <div class="how-row"><div class="icon">3️⃣</div><div>Combine <strong>3 ou mais</strong> iguais em linha/coluna para eliminar.</div></div>
+      <div class="how-row"><div class="icon">🎯</div><div>Atinja a <strong>meta de pontos</strong> antes dos movimentos acabarem.</div></div>
+    </div>
+    <div class="how-section">
+      <h3>Especiais</h3>
+      <div class="how-row"><div class="icon">💣</div><div><strong>Bomba</strong> — 4 em linha cria bomba. Ao combinar, explode em área 3×3.</div></div>
+      <div class="how-row"><div class="icon">⭐</div><div><strong>Combo</strong> — Cascatas consecutivas multiplicam os pontos.</div></div>
+      <div class="how-row"><div class="icon">🧱</div><div><strong>Bloqueio</strong> — Células fixas que aparecem nos níveis avançados.</div></div>
+    </div>
+    <div class="how-section">
+      <h3>Estrelas</h3>
+      <div class="how-row"><div class="icon">⭐</div><div>Atingir a <strong>meta mínima</strong> = 1 estrela</div></div>
+      <div class="how-row"><div class="icon">⭐⭐</div><div>Pontuação <strong>intermediária</strong> = 2 estrelas</div></div>
+      <div class="how-row"><div class="icon">⭐⭐⭐</div><div>Pontuação <strong>máxima</strong> = 3 estrelas — perfeito!</div></div>
+    </div>
+    <div class="how-section">
+      <h3>Strains</h3>
+      <div class="how-row"><div class="icon">🌿</div><div><strong>OG Kush</strong></div></div>
+      <div class="how-row"><div class="icon">🍋</div><div><strong>Lemon Haze</strong></div></div>
+      <div class="how-row"><div class="icon">🫐</div><div><strong>Blueberry</strong></div></div>
+      <div class="how-row"><div class="icon">🔥</div><div><strong>Gorilla Glue</strong></div></div>
+      <div class="how-row"><div class="icon">🌸</div><div><strong>Purple Haze</strong></div></div>
+      <div class="how-row"><div class="icon">💜</div><div><strong>Granddaddy Purple</strong></div></div>
+      <div class="how-row"><div class="icon">🌲</div><div><strong>Sour Diesel</strong></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div class="screen hidden" id="screen-game">
+  <div class="game-header">
+    <div class="game-logo">KUSH <span>CRUSH</span></div>
+    <div class="game-level-info">
+      <div class="game-level-badge" id="game-level-badge">FASE 1</div>
+      <button class="game-pause-btn" id="btn-pause">⏸</button>
+    </div>
+  </div>
+  <div class="hud">
+    <div class="hud-card"><div class="hud-label">Pontos</div><div class="hud-value" id="score-val">0</div></div>
+    <div class="hud-card"><div class="hud-label">Moves</div><div class="hud-value" id="moves-val">30</div></div>
+    <div class="hud-card"><div class="hud-label">Meta</div><div class="hud-value" id="target-val">500</div></div>
+  </div>
+  <div class="progress-wrap"><div class="progress-bar" id="progress-bar" style="width:0%"></div></div>
+  <div class="level-objective">
+    <span class="obj-icon" id="obj-icon">🌱</span>
+    <strong id="obj-text">complete o objetivo</strong>
+  </div>
+  <div class="board-wrap"><div id="board"></div></div>
+</div>
+
+<!-- WIN -->
+<div class="overlay hidden" id="overlay-win">
+  <div class="modal">
+    <div class="modal-emoji">🌿</div>
+    <div class="modal-title win">WIN!</div>
+    <div class="modal-sub">pontuação final</div>
+    <div class="modal-score" id="win-score">0</div>
+    <div class="modal-stars" id="win-stars">⭐⭐⭐</div>
+    <button class="modal-btn primary" id="btn-next-level">PRÓXIMA FASE →</button>
+    <button class="modal-btn secondary" id="btn-win-menu">MENU PRINCIPAL</button>
+  </div>
+</div>
+
+<!-- LOSE -->
+<div class="overlay hidden" id="overlay-lose">
+  <div class="modal">
+    <div class="modal-emoji">💨</div>
+    <div class="modal-title lose">SECO...</div>
+    <div class="modal-sub">sem movimentos · pontuação</div>
+    <div class="modal-score" id="lose-score">0</div>
+    <button class="modal-btn primary" id="btn-retry">↺ TENTAR DE NOVO</button>
+    <button class="modal-btn secondary" id="btn-lose-menu">MENU PRINCIPAL</button>
+  </div>
+</div>
+
+<!-- PAUSE -->
+<div class="overlay hidden" id="overlay-pause">
+  <div class="modal">
+    <div class="modal-emoji">⏸</div>
+    <div class="modal-title pause">PAUSA</div>
+    <div class="modal-sub" id="pause-info">FASE 1</div>
+    <button class="modal-btn primary" id="btn-resume">▶ CONTINUAR</button>
+    <button class="modal-btn secondary" id="btn-pause-restart">↺ REINICIAR</button>
+    <button class="modal-btn secondary" id="btn-pause-menu">← MENU</button>
+  </div>
+</div>
+
+<!-- RESET CONFIRM -->
+<div class="overlay hidden" id="overlay-reset">
+  <div class="modal">
+    <div class="modal-emoji">⚠️</div>
+    <div class="modal-title lose">RESETAR?</div>
+    <div class="modal-sub" style="margin-bottom:14px">Todo progresso será perdido.</div>
+    <button class="modal-btn danger" id="btn-reset-confirm">SIM, APAGAR TUDO</button>
+    <button class="modal-btn secondary" id="btn-reset-cancel">CANCELAR</button>
+  </div>
+</div>
+
+<script>
+// ===== LEVELS =====
+const STRAINS=['🌿','🍋','🫐','🔥','🌸','💜','🌲'];
+const BOMB='💣';
+const COLS=7,ROWS=7;
+
+const LEVELS=[
+  {name:'OG Basics',    world:'🌱 JARDIM',   target:400,  moves:25,strains:4,obj:'Aprenda o flow básico',            blocked:[],                                                                    stars:[400,600,900]},
+  {name:'Lemon Drop',   world:'🌱 JARDIM',   target:600,  moves:24,strains:4,obj:'Combine 4+ para criar bombas',      blocked:[],                                                                    stars:[600,900,1200]},
+  {name:'Berry Time',   world:'🌱 JARDIM',   target:800,  moves:22,strains:5,obj:'5 strains em circulação',           blocked:[],                                                                    stars:[800,1100,1500]},
+  {name:'Haze Mode',    world:'🌱 JARDIM',   target:1000, moves:20,strains:5,obj:'Menos moves — mais pontos',         blocked:[[2,2],[2,4],[4,2],[4,4]],                                             stars:[1000,1400,1900]},
+  {name:'First Bloom',  world:'🌱 JARDIM',   target:1200, moves:22,strains:5,obj:'Bloqueios no centro',               blocked:[[3,3],[1,1],[1,5],[5,1],[5,5]],                                       stars:[1200,1700,2200]},
+  {name:'Greenhouse',   world:'🌿 ESTUFA',   target:1500, moves:22,strains:6,obj:'6 variedades ativas',               blocked:[],                                                                    stars:[1500,2000,2800]},
+  {name:'Purple Rain',  world:'🌿 ESTUFA',   target:1800, moves:20,strains:6,obj:'Cascata — encadeie combos',         blocked:[[0,3],[6,3],[3,0],[3,6]],                                             stars:[1800,2500,3200]},
+  {name:'Gorilla Wall', world:'🌿 ESTUFA',   target:2200, moves:20,strains:6,obj:'Parede lateral — contorne',         blocked:[[2,0],[2,1],[2,5],[2,6],[4,0],[4,1],[4,5],[4,6]],                     stars:[2200,3000,4000]},
+  {name:'Diesel Drip',  world:'🌿 ESTUFA',   target:2600, moves:18,strains:6,obj:'Cruz bloqueada no centro',          blocked:[[1,3],[2,3],[4,3],[5,3],[3,1],[3,2],[3,4],[3,5]],                     stars:[2600,3500,4600]},
+  {name:'Full Canopy',  world:'🌿 ESTUFA',   target:3000, moves:20,strains:7,obj:'Todos os 7 strains!',               blocked:[[0,0],[0,6],[6,0],[6,6],[3,3]],                                       stars:[3000,4000,5500]},
+  {name:'Harvest Day',  world:'🔥 COLHEITA', target:3800, moves:18,strains:7,obj:'A colheita começa — foco total',    blocked:[[1,1],[1,5],[5,1],[5,5],[2,3],[4,3]],                                 stars:[3800,5000,6500]},
+  {name:'Trichome',     world:'🔥 COLHEITA', target:4500, moves:17,strains:7,obj:'Densidade máxima de bloqueios',     blocked:[[0,1],[0,5],[6,1],[6,5],[3,0],[3,6],[1,3],[5,3]],                     stars:[4500,6000,8000]},
+  {name:'Cured',        world:'🔥 COLHEITA', target:5500, moves:17,strains:7,obj:'Grade fechada — ache o caminho',    blocked:[[2,1],[2,2],[2,4],[2,5],[4,1],[4,2],[4,4],[4,5]],                     stars:[5500,7000,9500]},
+  {name:'Top Shelf',    world:'🔥 COLHEITA', target:6500, moves:16,strains:7,obj:'Só os melhores chegam aqui',        blocked:[[1,2],[1,4],[2,1],[2,5],[4,1],[4,5],[5,2],[5,4],[3,0],[3,6]],         stars:[6500,8500,11000]},
+  {name:'KUSH MASTER',  world:'🔥 COLHEITA', target:8000, moves:20,strains:7,obj:'O desafio final. Kush Master.',     blocked:[[0,3],[1,2],[1,4],[2,1],[2,5],[3,0],[3,6],[4,1],[4,5],[5,2],[5,4],[6,3]], stars:[8000,10000,14000]},
+];
+
+const WORLD_TILE_EMOJI={'🌱 JARDIM':['🌱','🍀','🌿','🌾','🌼'],'🌿 ESTUFA':['🌿','💧','☀️','🫐','🌸'],'🔥 COLHEITA':['🔥','⭐','💜','🏆','💣']};
+
+// ===== SAVE =====
+function loadSave(){try{return JSON.parse(localStorage.getItem('kc_save')||'{}')}catch{return{}}}
+function writeSave(d){localStorage.setItem('kc_save',JSON.stringify(d))}
+function getUnlocked(){return loadSave().unlocked||1}
+function getLevelStars(i){return(loadSave().stars||{})[i]||0}
+function doSaveWin(idx,sc){
+  const s=loadSave(),lvl=LEVELS[idx];
+  let earned=sc>=lvl.stars[2]?3:sc>=lvl.stars[1]?2:sc>=lvl.stars[0]?1:0;
+  if(!s.stars)s.stars={};
+  s.stars[idx]=Math.max(s.stars[idx]||0,earned);
+  s.unlocked=Math.min(LEVELS.length,Math.max(s.unlocked||1,idx+2));
+  writeSave(s);return earned;
+}
+function doReset(){localStorage.removeItem('kc_save')}
+
+// ===== SCREEN NAV =====
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('hidden',s.id!=='screen-'+id));
+}
+
+// ===== MENU =====
+function refreshMenuStats(){
+  const s=loadSave(),stars=s.stars||{};
+  const done=Object.values(stars).filter(v=>v>0).length;
+  document.getElementById('stat-level').textContent=getUnlocked();
+  document.getElementById('stat-done').textContent=done+'/'+LEVELS.length;
+}
+
+document.getElementById('btn-play').onclick=()=>startLevel(Math.max(0,getUnlocked()-1));
+document.getElementById('btn-levels').onclick=()=>{buildLevels();showScreen('levels')};
+document.getElementById('btn-howto').onclick=()=>showScreen('howto');
+document.getElementById('btn-reset').onclick=()=>document.getElementById('overlay-reset').classList.remove('hidden');
+document.getElementById('btn-reset-confirm').onclick=()=>{doReset();hideOverlays();refreshMenuStats()};
+document.getElementById('btn-reset-cancel').onclick=()=>document.getElementById('overlay-reset').classList.add('hidden');
+document.getElementById('lvl-back').onclick=()=>showScreen('menu');
+document.getElementById('howto-back').onclick=()=>showScreen('menu');
+
+// ===== LEVEL SELECT =====
+function buildLevels(){
+  const cont=document.getElementById('levels-content');
+  cont.innerHTML='';
+  const unlocked=getUnlocked();
+  const worlds={};
+  LEVELS.forEach((l,i)=>{if(!worlds[l.world])worlds[l.world]=[];worlds[l.world].push({l,i})});
+  Object.entries(worlds).forEach(([world,items])=>{
+    const sec=document.createElement('div');sec.className='world-section';
+    sec.innerHTML=`<div class="world-label">${world}</div>`;
+    const grid=document.createElement('div');grid.className='levels-grid';
+    items.forEach(({l,i})=>{
+      const locked=i+1>unlocked,stars=getLevelStars(i),isCur=i+1===unlocked&&stars===0;
+      const tile=document.createElement('div');
+      tile.className='level-tile'+(locked?' locked':'')+(stars>0?' completed':'')+(isCur?' current':'');
+      const emojis=WORLD_TILE_EMOJI[world]||['🌿'];
+      const em=emojis[i%emojis.length];
+      let sh='';for(let s=0;s<3;s++)sh+=s<stars?'⭐':'☆';
+      tile.innerHTML=locked?`<div style="font-size:18px">🔒</div><div class="tile-num" style="font-size:14px;color:var(--muted)">${i+1}</div>`:`<div class="tile-emoji">${em}</div><div class="tile-num">${i+1}</div><div class="tile-stars">${sh}</div>`;
+      if(!locked)tile.onclick=()=>startLevel(i);
+      grid.appendChild(tile);
+    });
+    sec.appendChild(grid);cont.appendChild(sec);
+  });
+}
+
+// ===== GAME ENGINE =====
+let board=[],score=0,movesLeft=0,currentLevel=0;
+let selected=null,animating=false,touchStartPos=null;
+const boardEl=document.getElementById('board');
+const scoreEl=document.getElementById('score-val');
+const movesEl=document.getElementById('moves-val');
+const targetEl=document.getElementById('target-val');
+const progressEl=document.getElementById('progress-bar');
+
+function startLevel(idx){
+  currentLevel=idx;
+  const l=LEVELS[idx];
+  score=0;movesLeft=l.moves;selected=null;animating=false;
+  document.getElementById('game-level-badge').textContent=`FASE ${idx+1}`;
+  document.getElementById('pause-info').textContent=`FASE ${idx+1} — ${l.name}`;
+  document.getElementById('obj-icon').textContent=idx<5?'🌱':idx<10?'🌿':'🔥';
+  document.getElementById('obj-text').textContent=l.obj;
+  updateHUD();initBoard();renderBoard();
+  showScreen('game');hideOverlays();
+}
+
+function initBoard(){
+  const l=LEVELS[currentLevel];
+  const bs=new Set(l.blocked.map(([r,c])=>`${r},${c}`));
+  board=[];
+  for(let r=0;r<ROWS;r++){board[r]=[];for(let c=0;c<COLS;c++)board[r][c]=bs.has(`${r},${c}`)?'BLOCK':randStrain(r,c,l.strains,bs)}
+}
+
+function randStrain(r,c,n,bs){
+  const pool=STRAINS.slice(0,n);
+  for(let i=0;i<20;i++){const s=pool[Math.floor(Math.random()*pool.length)];if(!wouldMatch(r,c,s))return s}
+  return pool[0];
+}
+function wouldMatch(r,c,s){
+  if(c>=2&&board[r][c-1]===s&&board[r][c-2]===s)return true;
+  if(r>=2&&board[r-1]?.[c]===s&&board[r-2]?.[c]===s)return true;
+  return false;
+}
+
+function updateHUD(){
+  const l=LEVELS[currentLevel];
+  scoreEl.textContent=score;movesEl.textContent=movesLeft;targetEl.textContent=l.target;
+  movesEl.style.color=movesLeft<=5?'var(--red)':'var(--gold)';
+  progressEl.style.width=Math.min(100,Math.round(score/l.target*100))+'%';
+}
+
+function renderBoard(){
+  boardEl.innerHTML='';
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){
+    const el=document.createElement('div');el.className='cell';el.dataset.r=r;el.dataset.c=c;
+    if(board[r][c]==='BLOCK'){el.classList.add('blocked')}
+    else{el.textContent=board[r][c];el.addEventListener('click',()=>onCellClick(r,c));el.addEventListener('touchstart',e=>onTS(e,r,c),{passive:false});el.addEventListener('touchend',e=>onTE(e,r,c),{passive:false})}
+    boardEl.appendChild(el);
+  }
+}
+function getCell(r,c){return boardEl.querySelector(`[data-r="${r}"][data-c="${c}"]`)}
+
+function onCellClick(r,c){
+  if(animating||board[r][c]==='BLOCK')return;
+  if(!selected){selected={r,c};getCell(r,c)?.classList.add('selected')}
+  else{
+    const{r:sr,c:sc}=selected;getCell(sr,sc)?.classList.remove('selected');
+    if(sr===r&&sc===c){selected=null;return}
+    if(isAdj(sr,sc,r,c)){selected=null;trySwap(sr,sc,r,c)}
+    else{selected={r,c};getCell(r,c)?.classList.add('selected')}
+  }
+}
+function onTS(e,r,c){e.preventDefault();touchStartPos={r,c,x:e.touches[0].clientX,y:e.touches[0].clientY}}
+function onTE(e,r,c){
+  e.preventDefault();if(!touchStartPos)return;
+  const dx=e.changedTouches[0].clientX-touchStartPos.x,dy=e.changedTouches[0].clientY-touchStartPos.y;
+  const dist=Math.sqrt(dx*dx+dy*dy);
+  if(dist<10){onCellClick(touchStartPos.r,touchStartPos.c)}
+  else{
+    let tr=r,tc=c;
+    if(Math.abs(dy)>Math.abs(dx)){tr=dy>0?r+1:r-1}else{tc=dx>0?c+1:c-1}
+    if(tr>=0&&tr<ROWS&&tc>=0&&tc<COLS&&board[tr][tc]!=='BLOCK'){
+      if(selected){getCell(selected.r,selected.c)?.classList.remove('selected');selected=null}
+      trySwap(touchStartPos.r,touchStartPos.c,tr,tc);
+    }
+  }
+  touchStartPos=null;
+}
+function isAdj(r1,c1,r2,c2){return Math.abs(r1-r2)+Math.abs(c1-c2)===1}
+
+async function trySwap(r1,c1,r2,c2){
+  if(animating||board[r1][c1]==='BLOCK'||board[r2][c2]==='BLOCK')return;
+  animating=true;swap(r1,c1,r2,c2);renderBoard();
+  const m=findMatches();
+  if(!m.length){await delay(180);swap(r1,c1,r2,c2);renderBoard();shakeCells([[r1,c1],[r2,c2]]);animating=false;return}
+  movesLeft--;updateHUD();
+  await processMatches(m);
+  animating=false;checkEnd();
+}
+function swap(r1,c1,r2,c2){[board[r1][c1],board[r2][c2]]=[board[r2][c2],board[r1][c1]]}
+
+function findMatches(){
+  const m=new Set();
+  for(let r=0;r<ROWS;r++){let run=1;for(let c=1;c<=COLS;c++){const cur=board[r][c],prev=board[r][c-1];if(c<COLS&&cur===prev&&cur!=='BLOCK'&&cur!==BOMB)run++;else{if(run>=3)for(let k=c-run;k<c;k++)m.add(`${r},${k}`);run=1}}}
+  for(let c=0;c<COLS;c++){let run=1;for(let r=1;r<=ROWS;r++){const cur=board[r]?.[c],prev=board[r-1]?.[c];if(r<ROWS&&cur===prev&&cur!=='BLOCK'&&cur!==BOMB)run++;else{if(run>=3)for(let k=r-run;k<r;k++)m.add(`${k},${c}`);run=1}}}
+  return[...m].map(s=>s.split(',').map(Number));
+}
+
+async function processMatches(matches,combo=1){
+  if(!matches.length)return;
+  const pts=matches.length*35*combo;score+=pts;updateHUD();
+  showScorePop(pts,combo);if(combo>1)showCombo(combo);
+  const bombs=findBombDrops(matches);
+  for(const[r,c]of matches){const el=getCell(r,c);if(el)el.classList.add('matched');if(board[r][c]===BOMB)explodeBomb(r,c,matches)}
+  await delay(360);
+  for(const{r,c}of bombs)board[r][c]=BOMB;
+  for(const[r,c]of matches)if(board[r][c]!=='BLOCK')board[r][c]=null;
+  renderBoard();await delay(50);dropTiles();await delay(70);fillEmpty();renderBoard();animateFalling();await delay(260);
+  const nm=findMatches();if(nm.length)await processMatches(nm,combo+1);
+}
+
+function findBombDrops(matches){
+  const res=[],ms=new Set(matches.map(([r,c])=>`${r},${c}`));
+  for(let r=0;r<ROWS;r++){let run=1,sc=0;for(let c=1;c<=COLS;c++){if(c<COLS&&board[r][c]===board[r][c-1]&&ms.has(`${r},${c}`)&&board[r][c]!=='BLOCK')run++;else{if(run===4&&Math.random()<.65)res.push({r,c:sc+Math.floor(run/2)});run=1;sc=c}}}
+  return res;
+}
+
+function explodeBomb(br,bc,exclude){
+  for(let dr=-1;dr<=1;dr++)for(let dc=-1;dc<=1;dc++){
+    const nr=br+dr,nc=bc+dc;
+    if(nr>=0&&nr<ROWS&&nc>=0&&nc<COLS&&board[nr][nc]!=='BLOCK'&&!exclude.find(([r,c])=>r===nr&&c===nc)){exclude.push([nr,nc]);const el=getCell(nr,nc);if(el)el.classList.add('matched')}
+  }
+}
+
+function dropTiles(){
+  for(let c=0;c<COLS;c++){
+    let write=ROWS-1;
+    for(let r=ROWS-1;r>=0;r--){
+      if(board[r][c]==='BLOCK'){write=r-1}
+      else if(board[r][c]!==null){if(write!==r){board[write][c]=board[r][c];board[r][c]=null}write--}
+    }
+    while(write>=0){if(board[write][c]!=='BLOCK')board[write][c]=null;write--}
+  }
+}
+
+function fillEmpty(){
+  const pool=STRAINS.slice(0,LEVELS[currentLevel].strains);
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++)if(board[r][c]===null)board[r][c]=pool[Math.floor(Math.random()*pool.length)];
+}
+
+function animateFalling(){
+  for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const el=getCell(r,c);if(el){el.classList.remove('falling');void el.offsetWidth;el.classList.add('falling')}}
+}
+
+function shakeCells(cells){
+  for(const[r,c]of cells){const el=getCell(r,c);if(el){el.classList.add('shake');el.addEventListener('animationend',()=>el.classList.remove('shake'),{once:true})}}
+}
+
+function showScorePop(pts,combo){
+  const pop=document.createElement('div');pop.className='score-pop';
+  pop.textContent=combo>1?`+${pts} ×${combo}`:`+${pts}`;
+  const rect=boardEl.getBoundingClientRect();
+  pop.style.left=(rect.left+rect.width/2-30)+'px';pop.style.top=(rect.top+rect.height/2)+'px';
+  document.body.appendChild(pop);pop.addEventListener('animationend',()=>pop.remove());
+}
+
+function showCombo(combo){
+  const el=document.createElement('div');el.className='combo-display';
+  const lbl={2:'DOUBLE!',3:'TRIPLE! 🔥',4:'QUAD! ⚡',5:'INSANO! 💥'};
+  el.textContent=lbl[combo]||`×${combo} COMBO!`;
+  document.body.appendChild(el);el.addEventListener('animationend',()=>el.remove());
+}
+
+function checkEnd(){
+  const l=LEVELS[currentLevel];
+  if(score>=l.target)setTimeout(()=>{const st=doSaveWin(currentLevel,score);showWin(st);refreshMenuStats()},500);
+  else if(movesLeft<=0)setTimeout(showLose,500);
+}
+
+function showWin(stars){
+  document.getElementById('win-score').textContent=score;
+  let sh='';for(let i=0;i<3;i++)sh+=i<stars?'⭐':'☆';
+  document.getElementById('win-stars').textContent=sh;
+  document.getElementById('btn-next-level').style.display=currentLevel+1<LEVELS.length?'block':'none';
+  document.getElementById('overlay-win').classList.remove('hidden');
+}
+function showLose(){
+  document.getElementById('lose-score').textContent=score;
+  document.getElementById('overlay-lose').classList.remove('hidden');
+}
+function hideOverlays(){
+  ['overlay-win','overlay-lose','overlay-pause','overlay-reset'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+}
+
+// OVERLAY EVENTS
+document.getElementById('btn-next-level').onclick=()=>{hideOverlays();startLevel(currentLevel+1)};
+document.getElementById('btn-win-menu').onclick=()=>{hideOverlays();showScreen('menu')};
+document.getElementById('btn-retry').onclick=()=>{hideOverlays();startLevel(currentLevel)};
+document.getElementById('btn-lose-menu').onclick=()=>{hideOverlays();showScreen('menu')};
+document.getElementById('btn-pause').onclick=()=>document.getElementById('overlay-pause').classList.remove('hidden');
+document.getElementById('btn-resume').onclick=()=>document.getElementById('overlay-pause').classList.add('hidden');
+document.getElementById('btn-pause-restart').onclick=()=>{hideOverlays();startLevel(currentLevel)};
+document.getElementById('btn-pause-menu').onclick=()=>{hideOverlays();showScreen('menu')};
+
+// INIT
+refreshMenuStats();
+
+function delay(ms){return new Promise(r=>setTimeout(r,ms))}
+</script>
+</body>
+</html>
